@@ -6,14 +6,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build with Buildozer (Forcing Automate)
+      - name: Build with Buildozer (Permissão de Root Forçada)
         run: |
           mkdir -p bin
-          # O comando 'yes |' envia 'y' infinitamente para qualquer pergunta
           docker run --rm \
             -v ${{ github.workspace }}:/home/user/hostdir \
+            -e FORCE_BUILDOZER_ALLOW_ROOT=1 \
             kivy/buildozer:latest \
-            /bin/bash -c "yes | buildozer android debug"
+            android debug
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
