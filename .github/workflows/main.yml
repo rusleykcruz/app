@@ -6,13 +6,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build with Buildozer
-        uses: ArtemSerebriakov/buildozer-action@v1
-        with:
-          save_bundle: false
-          # O comando abaixo garante que ele compile para Android
-          command: buildozer android debug
-
+      - name: Build with Buildozer (O Caminho Definitivo)
+        run: |
+          mkdir -p bin
+          # Usamos o Docker oficial, mas injetamos o comando que pula a trava de segurança
+          docker run --rm \
+            -v ${{ github.workspace }}:/home/user/hostdir \
+            kivy/buildozer:latest \
+            /bin/bash -c "export FORCE_BUILDOZER_ALLOW_ROOT=1 && buildozer android debug"
+          
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
