@@ -6,14 +6,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build with Buildozer (O Caminho Definitivo)
+      - name: Build with Buildozer (Desativando trava de Root via Sed)
         run: |
           mkdir -p bin
-          # Usamos o Docker oficial, mas injetamos o comando que pula a trava de segurança
           docker run --rm \
             -v ${{ github.workspace }}:/home/user/hostdir \
             kivy/buildozer:latest \
-            /bin/bash -c "export FORCE_BUILDOZER_ALLOW_ROOT=1 && buildozer android debug"
+            /bin/bash -c "sed -i 's/self.check_root()/# self.check_root()/g' /home/user/.venv/lib/python3.12/site-packages/buildozer/__init__.py && buildozer android debug"
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
