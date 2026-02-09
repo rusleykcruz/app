@@ -1,4 +1,4 @@
-name: Build APK Puro
+name: Build APK
 on: [push]
 jobs:
   build:
@@ -6,34 +6,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Limpar e Atualizar Repositórios
-        run: |
-          sudo apt-get clean
-          sudo apt-get update --fix-missing
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      - name: Instalar Dependências (Versão Estável)
+      - name: Install Buildozer
         run: |
-          sudo apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages \
-          python3-pip build-essential git python3 python3-dev ffmpeg libsdl2-dev libsdl2-image-dev \
-          libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev \
-          libavcodec-dev zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base \
-          gstreamer1.0-plugins-good libsqlite3-dev sqlite3 bzip2 libbz2-dev libssl-dev \
-          openssl libffi-dev libncurses5-dev libncursesw5-dev libtinfo5 pkg-config \
-          libjpeg-dev autoconf automake libtool libltdl-dev
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.33
 
-      - name: Instalar Buildozer e Cython
+      - name: Build with Buildozer
         run: |
-          pip3 install --user --upgrade buildozer Cython==0.29.33
-          echo "/home/runner/.local/bin" >> $GITHUB_PATH
-
-      - name: Gerar APK
-        run: |
-          mkdir -p bin
-          # Forçamos o buildozer a rodar ignorando avisos de ambiente
+          # O segredo: usamos o comando direto. 
+          # O runner do GitHub já tem Java e Android SDK instalados por padrão!
           buildozer android debug --yes
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: MeuAppFinal
+          name: MeuAppInstalavel
           path: bin/*.apk
