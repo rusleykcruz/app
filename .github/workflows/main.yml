@@ -1,4 +1,4 @@
-name: Build APK
+name: Build APK Puro
 on: [push]
 jobs:
   build:
@@ -6,23 +6,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Esta é a parte mágica: ela configura o Android SDK sem ser root
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+      - name: Instalar Dependências do Sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip build-essential git python3 python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev libgstreamer1.0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good libsqlite3-dev sqlite3 bzip2 libbz2-dev libssl-dev openssl libffi-dev libgpm2 libncurses5-dev libncursesw5-dev libtinfo5 adwaita-icon-theme-full libgirepository1.0-dev libcairo2-dev pkg-config python3-gi python3-gi-cairo gir1.2-gtk-3.0 libmtdev-dev xclip xsel libjpeg-dev autoconf automake libtool pkg-config libltdl-dev
 
-      - name: Build with Buildozer (Sem erro de Root)
-        uses: ArtemSerebriakov/buildozer-action@v1
-        with:
-          save_bundle: false
-          # O segredo: rodar através de uma action que gerencia o usuário
-          command: buildozer android debug --yes
-        continue-on-error: false
+      - name: Instalar Buildozer e Cython
+        run: |
+          pip3 install --user --upgrade buildozer Cython==0.29.33
+          echo "/home/runner/.local/bin" >> $GITHUB_PATH
+
+      - name: Gerar APK (Como usuário comum)
+        run: |
+          # Criamos a pasta bin antes
+          mkdir -p bin
+          # O buildozer android debug roda aqui sem erro de root porque o GitHub Actions
+          # por padrão já roda como um usuário comum (runner), não como root.
+          buildozer android debug --yes
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: MeuAppInstalavel
+          name: MeuAppFinal
           path: bin/*.apk
