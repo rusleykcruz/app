@@ -6,22 +6,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Instalar Dependências do Sistema
+      - name: Limpar e Atualizar Repositórios
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip build-essential git python3 python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev libgstreamer1.0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good libsqlite3-dev sqlite3 bzip2 libbz2-dev libssl-dev openssl libffi-dev libgpm2 libncurses5-dev libncursesw5-dev libtinfo5 adwaita-icon-theme-full libgirepository1.0-dev libcairo2-dev pkg-config python3-gi python3-gi-cairo gir1.2-gtk-3.0 libmtdev-dev xclip xsel libjpeg-dev autoconf automake libtool pkg-config libltdl-dev
+          sudo apt-get clean
+          sudo apt-get update --fix-missing
+
+      - name: Instalar Dependências (Versão Estável)
+        run: |
+          sudo apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages \
+          python3-pip build-essential git python3 python3-dev ffmpeg libsdl2-dev libsdl2-image-dev \
+          libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev \
+          libavcodec-dev zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base \
+          gstreamer1.0-plugins-good libsqlite3-dev sqlite3 bzip2 libbz2-dev libssl-dev \
+          openssl libffi-dev libncurses5-dev libncursesw5-dev libtinfo5 pkg-config \
+          libjpeg-dev autoconf automake libtool libltdl-dev
 
       - name: Instalar Buildozer e Cython
         run: |
           pip3 install --user --upgrade buildozer Cython==0.29.33
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Gerar APK (Como usuário comum)
+      - name: Gerar APK
         run: |
-          # Criamos a pasta bin antes
           mkdir -p bin
-          # O buildozer android debug roda aqui sem erro de root porque o GitHub Actions
-          # por padrão já roda como um usuário comum (runner), não como root.
+          # Forçamos o buildozer a rodar ignorando avisos de ambiente
           buildozer android debug --yes
 
       - name: Upload APK
