@@ -6,16 +6,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build with Buildozer (Desativando trava de Root via Sed)
-        run: |
-          mkdir -p bin
-          docker run --rm \
-            -v ${{ github.workspace }}:/home/user/hostdir \
-            kivy/buildozer:latest \
-            /bin/bash -c "sed -i 's/self.check_root()/# self.check_root()/g' /home/user/.venv/lib/python3.12/site-packages/buildozer/__init__.py && buildozer android debug"
-          
+      # Esta é a parte mágica: ela configura o Android SDK sem ser root
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Buildozer (Sem erro de Root)
+        uses: ArtemSerebriakov/buildozer-action@v1
+        with:
+          save_bundle: false
+          # O segredo: rodar através de uma action que gerencia o usuário
+          command: buildozer android debug --yes
+        continue-on-error: false
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: MeuAppAPK
+          name: MeuAppInstalavel
           path: bin/*.apk
