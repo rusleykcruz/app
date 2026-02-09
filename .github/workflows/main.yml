@@ -1,0 +1,20 @@
+name: Build APK
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build with Buildozer Docker (Official)
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/home/user/hostdir \
+            kivy/buildozer:latest \
+            buildozer android debug
+          
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MeuAppAPK
+          path: bin/*.apk
