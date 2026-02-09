@@ -11,15 +11,24 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Buildozer
+      - name: Instalar Buildozer e Dependências
         run: |
           pip install --upgrade pip
           pip install buildozer cython==0.29.33
 
+      - name: Instalar Android Build-Tools e AIDL
+        run: |
+          # O AIDL fica dentro das build-tools. Vamos garantir que elas existam.
+          sudo apt-get install -y adb
+          # Localizando e adicionando o AIDL ao PATH
+          export ANDROID_SDK_ROOT=$ANDROID_HOME
+          export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools/34.0.0
+          echo "$ANDROID_SDK_ROOT/build-tools/34.0.0" >> $GITHUB_PATH
+
       - name: Build with Buildozer
         run: |
-          # O segredo: usamos o comando direto. 
-          # O runner do GitHub já tem Java e Android SDK instalados por padrão!
+          # Forçamos o uso do caminho correto durante o build
+          export APP_ALLOW_KIVY_INSTALL_AS_ROOT=1
           buildozer android debug --yes
 
       - name: Upload APK
